@@ -1,0 +1,124 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f7f2ec;
+  color: #4a3428;
+  overflow-x: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+section {
+  scroll-margin-top: 90px;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  nav {
+    padding-left: 30px !important;
+    padding-right: 30px !important;
+  }
+
+  nav > div:last-child {
+    gap: 20px !important;
+  }
+
+  section {
+    padding-left: 35px !important;
+    padding-right: 35px !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 650px) {
+  nav {
+    height: auto !important;
+    min-height: 75px !important;
+    padding: 15px 20px !important;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  nav > a {
+    font-size: 25px !important;
+  }
+
+  nav > div:last-child {
+    width: 100%;
+    justify-content: center;
+    gap: 16px !important;
+    flex-wrap: wrap;
+  }
+
+  nav > div:last-child a {
+    font-size: 14px !important;
+  }
+
+  nav > div:last-child button {
+    padding: 9px 18px !important;
+    font-size: 13px !important;
+  }
+
+  section {
+    padding: 80px 20px !important;
+    scroll-margin-top: 130px;
+  }
+
+  h1 {
+    font-size: 45px !important;
+  }
+
+  h2 {
+    font-size: 36px !important;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+  nav > div:last-child {
+    gap: 10px !important;
+  }
+
+  nav > div:last-child a {
+    font-size: 13px !important;
+  }
+
+  h1 {
+    font-size: 38px !important;
+  }
+
+  h2 {
+    font-size: 32px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .contact-container {
+    grid-template-columns: 1fr !important;
+    gap: 45px !important;
+  }
+}
