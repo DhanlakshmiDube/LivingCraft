@@ -1,7 +1,7 @@
+import { useState, useEffect } from "react";
+import { fetchProducts } from "../services/api";
 
-import { useState } from "react";
-
-const products = [
+const initialProducts = [
   {
     id: 1,
     name: "LACK Side Table",
@@ -73,10 +73,29 @@ const products = [
 const categories = ["All", "Tables", "Storage", "Lighting", "Decor"];
 
 function ProductExplorer() {
+  const [productsList, setProductsList] = useState(initialProducts);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [search, setSearch] = useState("");
 
-  const filteredProducts = products.filter((product) => {
+  useEffect(() => {
+    let isMounted = true;
+    fetchProducts()
+      .then((res) => {
+        if (isMounted && res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          setProductsList(res.data);
+        }
+      })
+      .catch((err) => {
+        // Silently use initialProducts if backend product catalog is not reachable
+        console.log("Using cached product catalog:", err.message);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filteredProducts = productsList.filter((product) => {
     const matchesCategory =
       selectedCategory === "All" ||
       product.category === selectedCategory;
@@ -84,9 +103,9 @@ function ProductExplorer() {
     const searchText = search.trim().toLowerCase();
 
     const matchesSearch =
-      product.name.toLowerCase().includes(searchText) ||
-      product.category.toLowerCase().includes(searchText) ||
-      product.description.toLowerCase().includes(searchText);
+      product.name?.toLowerCase().includes(searchText) ||
+      product.category?.toLowerCase().includes(searchText) ||
+      product.description?.toLowerCase().includes(searchText);
 
     return matchesCategory && matchesSearch;
   });
@@ -118,12 +137,10 @@ function ProductExplorer() {
           style={{
             textAlign: "center",
             fontSize: "clamp(28px, 4vw, 40px)",
-            lineHeight: "1.2",
             margin: "12px 0",
-            fontWeight: "600",
           }}
         >
-          Interior Product Explorer
+          Product Explorer
         </h2>
 
         <p
@@ -131,121 +148,111 @@ function ProductExplorer() {
             textAlign: "center",
             color: "#7A6B5F",
             lineHeight: "1.7",
-            maxWidth: "540px",
-            margin: "0 auto 32px",
+            maxWidth: "600px",
+            margin: "0 auto 36px",
           }}
         >
-          Thoughtful pieces, warm spaces, and little details
-          that make a house feel like home.
+          Browse furniture and accessories to complement your interior.
+          Filter by category or search by keyword.
         </p>
 
-        <input
-          type="search"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search furniture and décor..."
-          aria-label="Search products"
-          style={{
-            display: "block",
-            width: "100%",
-            maxWidth: "500px",
-            boxSizing: "border-box",
-            margin: "0 auto 25px",
-            padding: "15px 18px",
-            border: "1px solid #D8C9BB",
-            borderRadius: "12px",
-            background: "#FFFDF9",
-            color: "#4A3428",
-            fontSize: "15px",
-            outlineColor: "#A67C52",
-          }}
-        />
-
+        {/* Filter controls */}
         <div
           style={{
             display: "flex",
-            justifyContent: "center",
             flexWrap: "wrap",
-            gap: "10px",
+            gap: "12px",
+            justifyContent: "center",
+            alignItems: "center",
             marginBottom: "36px",
           }}
         >
-          {categories.map((category) => (
-            <button
-              key={category}
-              type="button"
-              onClick={() => setSelectedCategory(category)}
-              aria-pressed={selectedCategory === category}
-              style={{
-                padding: "10px 19px",
-                borderRadius: "30px",
-                border:
-                  selectedCategory === category
-                    ? "1px solid #8B5E3C"
-                    : "1px solid #D8C9BB",
-                background:
-                  selectedCategory === category
-                    ? "#8B5E3C"
-                    : "#FFFDF9",
-                color:
-                  selectedCategory === category
-                    ? "#FFFFFF"
-                    : "#6B5140",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight:
-                  selectedCategory === category ? "600" : "400",
-                transition: "background 0.2s ease",
-              }}
-            >
-              {category}
-            </button>
-          ))}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px",
+              justifyContent: "center",
+            }}
+          >
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                style={{
+                  padding: "8px 18px",
+                  borderRadius: "20px",
+                  border: "1px solid",
+                  borderColor:
+                    selectedCategory === category ? "#8B5E3C" : "#D8C9BB",
+                  background:
+                    selectedCategory === category ? "#8B5E3C" : "#FFFDF9",
+                  color:
+                    selectedCategory === category ? "#FFFDF9" : "#4A3428",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
+          <input
+            type="search"
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              padding: "9px 18px",
+              borderRadius: "20px",
+              border: "1px solid #D8C9BB",
+              background: "#FFFDF9",
+              color: "#4A3428",
+              fontSize: "14px",
+              outline: "none",
+              minWidth: "220px",
+            }}
+          />
         </div>
 
+        {/* Products Grid */}
         <div
           style={{
             display: "grid",
             gridTemplateColumns:
-              "repeat(auto-fit, minmax(min(100%, 250px), 1fr))",
-            gap: "26px",
-            alignItems: "stretch",
+              "repeat(auto-fill, minmax(min(100%, 260px), 1fr))",
+            gap: "28px",
           }}
         >
           {filteredProducts.map((product) => (
-            <article
-              key={product.id}
+            <div
+              key={product._id || product.id}
               style={{
-                display: "flex",
-                flexDirection: "column",
-                minWidth: 0,
                 background: "#FFFDF9",
                 borderRadius: "16px",
                 overflow: "hidden",
                 border: "1px solid #E8DED3",
-                boxShadow: "0 5px 18px rgba(74, 52, 40, 0.05)",
-                transition: "box-shadow 0.2s ease",
+                display: "flex",
+                flexDirection: "column",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
               }}
             >
               <div
                 style={{
-                  height: "230px",
+                  height: "200px",
                   overflow: "hidden",
-                  background:
-                    "linear-gradient(135deg, #EDE3D8, #F7F2EC)",
+                  background: "#EFE5DA",
                 }}
               >
                 <img
                   src={product.image}
-                  alt={product.imageAlt}
+                  alt={product.imageAlt || product.name}
                   loading="lazy"
-                  onError={(event) => {
-                    event.currentTarget.style.display = "none";
-                  }}
                   style={{
                     width: "100%",
                     height: "100%",
-                    display: "block",
                     objectFit: "cover",
                   }}
                 />
@@ -253,30 +260,46 @@ function ProductExplorer() {
 
               <div
                 style={{
+                  padding: "18px 20px",
                   display: "flex",
                   flexDirection: "column",
-                  flex: 1,
-                  padding: "22px",
+                  flexGrow: 1,
                 }}
               >
-                <p
+                <div
                   style={{
-                    color: "#A67C52",
-                    fontSize: "12px",
-                    fontWeight: "700",
-                    letterSpacing: "1.2px",
-                    textTransform: "uppercase",
-                    margin: "0 0 8px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                    marginBottom: "8px",
                   }}
                 >
-                  {product.category}
-                </p>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      textTransform: "uppercase",
+                      letterSpacing: "1.5px",
+                      color: "#A67C52",
+                      fontWeight: "700",
+                    }}
+                  >
+                    {product.category}
+                  </span>
+                  <span
+                    style={{
+                      fontWeight: "700",
+                      fontSize: "16px",
+                      color: "#4A3428",
+                    }}
+                  >
+                    ₹{product.price.toLocaleString("en-IN")}
+                  </span>
+                </div>
 
                 <h3
                   style={{
-                    margin: "0 0 10px",
-                    fontSize: "20px",
-                    lineHeight: "1.35",
+                    fontSize: "17px",
+                    margin: "0 0 8px",
                     fontWeight: "600",
                   }}
                 >
@@ -285,60 +308,53 @@ function ProductExplorer() {
 
                 <p
                   style={{
+                    fontSize: "13px",
                     color: "#7A6B5F",
-                    fontSize: "14px",
-                    lineHeight: "1.7",
-                    margin: "0 0 18px",
-                    flex: 1,
+                    lineHeight: "1.6",
+                    margin: "0 0 16px",
+                    flexGrow: 1,
                   }}
                 >
                   {product.description}
                 </p>
 
-                <p
-                  style={{
-                    fontSize: "22px",
-                    fontWeight: "700",
-                    margin: "0 0 18px",
-                    color: "#4A3428",
-                  }}
-                >
-                  ₹{product.price.toLocaleString("en-IN")}
-                </p>
-
-                <a
-                  href={product.searchUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "block",
-                    textAlign: "center",
-                    padding: "13px 12px",
-                    borderRadius: "9px",
-                    background: "#8B5E3C",
-                    color: "#FFFFFF",
-                    textDecoration: "none",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                  }}
-                >
-                  Explore on IKEA India ↗
-                </a>
+                {product.searchUrl && (
+                  <a
+                    href={product.searchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-block",
+                      textAlign: "center",
+                      padding: "8px 16px",
+                      borderRadius: "20px",
+                      border: "1px solid #D8C9BB",
+                      background: "#FDF9F4",
+                      color: "#8B5E3C",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                      textDecoration: "none",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    View on Retailer →
+                  </a>
+                )}
               </div>
-            </article>
+            </div>
           ))}
         </div>
 
         {filteredProducts.length === 0 && (
           <p
-            role="status"
             style={{
               textAlign: "center",
-              padding: "30px",
               color: "#7A6B5F",
+              marginTop: "40px",
+              fontSize: "16px",
             }}
           >
-            No products found. Try another search.
+            No products match your search or selected filter.
           </p>
         )}
 
@@ -351,11 +367,8 @@ function ProductExplorer() {
             marginTop: "30px",
           }}
         >
-          Sample catalogue for demonstration. Prices are
-          illustrative, not verified live IKEA prices.
-          Images are illustrative and may not depict the exact
-          listed product. Check the retailer's website for
-          current prices and availability.
+          Sample catalogue integrated with LivingCraft backend API. Prices and
+          images are illustrative.
         </p>
       </div>
     </section>

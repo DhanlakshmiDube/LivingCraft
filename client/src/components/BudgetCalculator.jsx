@@ -120,41 +120,58 @@ function BudgetCalculator() {
               htmlFor="room-area"
               style={{
                 display: "block",
-                margin: "22px 0 9px",
+                margin: "18px 0 9px",
                 fontWeight: "600",
               }}
             >
-              Room area (sq. ft.)
+              Approximate area (sq. ft.)
             </label>
 
             <input
               id="room-area"
               type="number"
-              min="1"
-              max="100000"
-              step="1"
-              required
+              min="20"
+              max="5000"
+              step="10"
               value={area}
               onChange={(event) => setArea(event.target.value)}
               style={fieldStyle}
-              placeholder="Enter area in square feet"
             />
 
-            <p
+            <input
+              type="range"
+              min="50"
+              max="1500"
+              step="25"
+              value={safeArea}
+              onChange={(event) => setArea(event.target.value)}
+              aria-label="Area in square feet"
               style={{
-                color: "#7A6B5F",
+                width: "100%",
+                accentColor: "#8B5E3C",
+                marginTop: "10px",
+                cursor: "pointer",
+              }}
+            />
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
                 fontSize: "12px",
-                marginTop: "8px",
+                color: "#7A6B5F",
+                marginTop: "4px",
               }}
             >
-              Example: 200 sq. ft.
-            </p>
+              <span>50 sq. ft.</span>
+              <span>1,500 sq. ft.</span>
+            </div>
 
             <label
               htmlFor="material-quality"
               style={{
                 display: "block",
-                margin: "22px 0 9px",
+                margin: "18px 0 9px",
                 fontWeight: "600",
               }}
             >
@@ -167,7 +184,7 @@ function BudgetCalculator() {
               onChange={(event) => setMaterial(event.target.value)}
               style={fieldStyle}
             >
-              {Object.entries(materialOptions).map(([name, option]) => (
+              {Object.keys(materialOptions).map((name) => (
                 <option key={name} value={name}>
                   {name}
                 </option>
@@ -178,8 +195,7 @@ function BudgetCalculator() {
               style={{
                 color: "#7A6B5F",
                 fontSize: "13px",
-                lineHeight: "1.6",
-                marginBottom: 0,
+                margin: "8px 0 0",
               }}
             >
               {materialOptions[material].description}
@@ -196,91 +212,130 @@ function BudgetCalculator() {
           >
             <p
               style={{
-                color: "#E2C5A5",
-                textTransform: "uppercase",
+                fontSize: "13px",
                 letterSpacing: "2px",
-                fontSize: "12px",
-                fontWeight: "700",
+                textTransform: "uppercase",
+                margin: 0,
+                color: "#D8C9BB",
               }}
             >
-              Your estimated budget
-            </p>
-
-            <p
-              aria-live="polite"
-              style={{
-                fontSize: "clamp(30px, 5vw, 42px)",
-                fontWeight: "700",
-                margin: "12px 0",
-                overflowWrap: "anywhere",
-              }}
-            >
-              {formatCurrency(total)}
-            </p>
-
-            <p style={{ color: "#E8DED3", fontSize: "14px" }}>
-              {roomType} · {safeArea.toLocaleString("en-IN")} sq. ft. · {material}
+              Estimated Investment
             </p>
 
             <div
               style={{
-                height: "1px",
-                background: "#806A59",
-                margin: "26px 0",
+                fontSize: "clamp(34px, 4vw, 44px)",
+                fontWeight: "700",
+                margin: "10px 0 24px",
+                color: "#F6EFE7",
               }}
-            />
+            >
+              {formatCurrency(total)}
+            </div>
 
-            <h3 style={{ fontSize: "17px", marginBottom: "20px" }}>
-              Estimated cost breakdown
-            </h3>
+            <h4
+              style={{
+                fontSize: "15px",
+                fontWeight: "600",
+                margin: "0 0 14px",
+                color: "#D8C9BB",
+              }}
+            >
+              Cost Breakdown
+            </h4>
 
-            {breakdown.map((item) => (
-              <div key={item.label} style={{ marginBottom: "22px" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: "12px",
-                    fontSize: "14px",
-                    marginBottom: "9px",
-                  }}
-                >
-                  <span>{item.label}</span>
-                  <strong>{formatCurrency(total * item.share)}</strong>
-                </div>
-
-                <div
-                  style={{
-                    height: "6px",
-                    borderRadius: "10px",
-                    background: "#806A59",
-                    overflow: "hidden",
-                  }}
-                >
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              {breakdown.map((item) => (
+                <div key={item.label}>
                   <div
                     style={{
-                      height: "100%",
-                      width: `${item.share * 100}%`,
-                      background: "#D9B58C",
-                      borderRadius: "10px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "14px",
+                      marginBottom: "6px",
                     }}
-                  />
+                  >
+                    <span>{item.label}</span>
+                    <span style={{ fontWeight: "600" }}>
+                      {formatCurrency(total * item.share)}
+                    </span>
+                  </div>
+
+                  <div
+                    style={{
+                      height: "6px",
+                      background: "rgba(255,255,255,0.15)",
+                      borderRadius: "3px",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        width: `${item.share * 100}%`,
+                        background: "#C08A60",
+                        borderRadius: "3px",
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div
+              style={{
+                marginTop: "30px",
+                paddingTop: "20px",
+                borderTop: "1px solid rgba(255,255,255,0.15)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: "12px",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: "12px", color: "#D8C9BB" }}>
+                  Estimated Rate
+                </div>
+                <div style={{ fontSize: "16px", fontWeight: "600" }}>
+                  ₹
+                  {Math.round(
+                    roomTypes[roomType].rate *
+                      materialOptions[material].multiplier
+                  ).toLocaleString("en-IN")}
+                  /sq. ft.
                 </div>
               </div>
-            ))}
+
+              <a
+                href="#contact"
+                style={{
+                  background: "#C08A60",
+                  color: "#FFFDF9",
+                  padding: "10px 20px",
+                  borderRadius: "20px",
+                  textDecoration: "none",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  transition: "background 0.2s ease",
+                }}
+              >
+                Discuss This Estimate →
+              </a>
+            </div>
 
             <p
               style={{
-                color: "#E8DED3",
-                fontSize: "12px",
-                lineHeight: "1.7",
-                marginTop: "26px",
-                marginBottom: 0,
+                fontSize: "11px",
+                color: "rgba(255,255,255,0.5)",
+                margin: "18px 0 0",
+                lineHeight: "1.5",
               }}
             >
-              Demonstration estimate only. Actual costs depend on
-              measurements, material brands, location, labour rates,
-              and project requirements.
+              * Estimates are for illustrative planning purposes. Final quotes
+              depend on structural requirements, site conditions, and bespoke
+              selection.
             </p>
           </div>
         </div>
@@ -290,15 +345,15 @@ function BudgetCalculator() {
 }
 
 const fieldStyle = {
-  display: "block",
   width: "100%",
-  boxSizing: "border-box",
-  padding: "13px 14px",
-  borderRadius: "9px",
+  padding: "12px 14px",
   border: "1px solid #D8C9BB",
+  borderRadius: "10px",
   background: "#FFFDF9",
   color: "#4A3428",
-  fontSize: "15px",
-}; 
+  fontSize: "14px",
+  boxSizing: "border-box",
+  fontFamily: "inherit",
+};
 
 export default BudgetCalculator;

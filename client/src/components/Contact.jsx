@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { submitQuoteRequest } from "../services/api";
 
 const fieldStyle = {
   width: "100%",
@@ -9,9 +9,9 @@ const fieldStyle = {
   borderRadius: "10px",
   background: "#FDF9F4",
   color: "#4A3428",
-  fontSize: "15px", 
-  boxSizing: "border-box", 
-  fontFamily: "inherit", 
+  fontSize: "15px",
+  boxSizing: "border-box",
+  fontFamily: "inherit",
 };
 
 function Contact() {
@@ -25,25 +25,56 @@ function Contact() {
     message: "",
   });
 
+  const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successInfo, setSuccessInfo] = useState(null);
 
   function handleChange(event) {
     const { name, value } = event.target;
 
     setFormData((previous) => ({
-      ...previous, 
-      [name]: value, 
-    })); 
+      ...previous,
+      [name]: value,
+    }));
 
-    setSubmitted(false); 
+    if (errorMsg) setErrorMsg("");
+    if (submitted) setSubmitted(false);
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
+    setLoading(true);
+    setErrorMsg("");
 
-    // Front-end demonstration only. 
-    // Database and email integration will be added later. 
-    setSubmitted(true); 
+    try {
+      const response = await submitQuoteRequest({
+        name: formData.name,
+        email: formData.email,
+        roomType: formData.roomType,
+        area: Number(formData.area),
+        material: formData.material,
+        budget: formData.budget,
+        message: formData.message,
+      });
+
+      setSubmitted(true);
+      setSuccessInfo(response);
+      setFormData({
+        name: "",
+        email: "",
+        roomType: "Living Room",
+        area: "",
+        material: "Standard",
+        budget: "",
+        message: "",
+      });
+    } catch (err) {
+      console.error("Quote submission error:", err);
+      setErrorMsg(err.message || "Failed to submit your request. Please ensure the backend is running.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -156,9 +187,9 @@ function Contact() {
               Your name *
             </label>
             <input
-              id="customer-name" 
-              name="name" 
-              type="text" 
+              id="customer-name"
+              name="name"
+              type="text"
               autoComplete="name"
               placeholder="Enter your full name"
               value={formData.name}
@@ -166,6 +197,7 @@ function Contact() {
               required
               maxLength={100}
               style={fieldStyle}
+              disabled={loading}
             />
 
             <label
@@ -185,6 +217,7 @@ function Contact() {
               required
               maxLength={254}
               style={fieldStyle}
+              disabled={loading}
             />
 
             <label
@@ -199,10 +232,15 @@ function Contact() {
               value={formData.roomType}
               onChange={handleChange}
               style={fieldStyle}
+              disabled={loading}
             >
               <option value="Living Room">Living Room</option>
               <option value="Kitchen">Kitchen</option>
               <option value="Office">Office</option>
+              <option value="Bedroom">Bedroom</option>
+              <option value="Bathroom">Bathroom</option>
+              <option value="Balcony">Balcony</option>
+              <option value="Porch">Porch</option>
             </select>
 
             <label
@@ -223,6 +261,7 @@ function Contact() {
               onChange={handleChange}
               required
               style={fieldStyle}
+              disabled={loading}
             />
 
             <label
@@ -237,6 +276,7 @@ function Contact() {
               value={formData.material}
               onChange={handleChange}
               style={fieldStyle}
+              disabled={loading}
             >
               <option value="Basic">Basic</option>
               <option value="Standard">Standard</option>
@@ -255,6 +295,7 @@ function Contact() {
               value={formData.budget}
               onChange={handleChange}
               style={fieldStyle}
+              disabled={loading}
             >
               <option value="">Select a budget range</option>
               <option value="Under ₹50,000">Under ₹50,000</option>
@@ -265,20 +306,21 @@ function Contact() {
             </select>
 
             <label
-              htmlFor="quote-message" 
-              style={labelStyle} 
-            > 
+              htmlFor="quote-message"
+              style={labelStyle}
+            >
               Tell us about your project *
-            </label> 
-            <textarea 
-              id="quote-message" 
-              name="message" 
-              rows={4} 
+            </label>
+            <textarea
+              id="quote-message"
+              name="message"
+              rows={4}
               placeholder="Describe your ideas, preferred style, or requirements..."
-              value={formData.message} 
-              onChange={handleChange} 
-              required 
+              value={formData.message}
+              onChange={handleChange}
+              required
               maxLength={2000}
+              disabled={loading}
               style={{
                 ...fieldStyle,
                 resize: "vertical",
@@ -286,55 +328,84 @@ function Contact() {
               }}
             />
 
-            <button 
-              type="submit" 
-              style={{ 
-                width: "100%", 
-                background: "#8B5E3C", 
-                color: "#FFFDF9", 
-                border: "none", 
-                padding: "15px", 
-                borderRadius: "30px", 
-                fontSize: "15px", 
-                fontWeight: "600", 
-                cursor: "pointer", 
-              }} 
-            > 
-              Request a Quote → 
-            </button> 
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: "100%",
+                background: loading ? "#B39580" : "#8B5E3C",
+                color: "#FFFDF9",
+                border: "none",
+                padding: "15px",
+                borderRadius: "30px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: loading ? "not-allowed" : "pointer",
+                transition: "all 0.3s ease",
+              }}
+            >
+              {loading ? "Submitting Request..." : "Request a Quote →"}
+            </button>
 
-            {submitted && (  
-              <div 
-                role="status" 
-                style={{ 
-                  marginTop: "18px", 
-                  padding: "15px", 
-                  borderRadius: "10px", 
-                  background: "#E8F0E5",
-                  color: "#35553A",
+            {errorMsg && (
+              <div
+                role="alert"
+                style={{
+                  marginTop: "18px",
+                  padding: "14px",
+                  borderRadius: "10px",
+                  background: "#FCEBEB",
+                  color: "#9C2B2B",
                   fontSize: "14px",
-                  lineHeight: "1.7", 
+                  lineHeight: "1.6",
+                  border: "1px solid #F5C6C6",
                 }}
               >
-                <strong>Form completed successfully!</strong>
-                <p style={{ margin: "5px 0 0" }}>
-                  Your details have been validated in this demo.
-                  No request has been sent or saved yet.
-                </p> 
+                <strong>Submission Error:</strong>
+                <p style={{ margin: "4px 0 0" }}>{errorMsg}</p>
               </div>
-            )} 
-          </form> 
-        </div> 
-      </div> 
-    </section> 
+            )}
+
+            {submitted && successInfo && (
+              <div
+                role="status"
+                style={{
+                  marginTop: "18px",
+                  padding: "16px",
+                  borderRadius: "10px",
+                  background: "#E8F0E5",
+                  color: "#284A2E",
+                  fontSize: "14px",
+                  lineHeight: "1.7",
+                  border: "1px solid #C3DFC0",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: "700" }}>
+                  <span>✓</span>
+                  <span>{successInfo.message || "Quote request submitted successfully!"}</span>
+                </div>
+                {successInfo.data?._id && (
+                  <p style={{ margin: "6px 0 0", fontSize: "13px", opacity: 0.9 }}>
+                    Inquiry Reference: <strong>#{successInfo.data._id}</strong>
+                  </p>
+                )}
+                <p style={{ margin: "5px 0 0", fontSize: "13px" }}>
+                  Our interior design consultants will review your space details and reach out within 24 hours.
+                </p>
+              </div>
+            )}
+          </form>
+        </div>
+      </div>
+    </section>
   );
 }
 
-const labelStyle = { 
-  display: "block", 
-  marginBottom: "8px", 
-  color: "#5E5047", 
-  fontSize: "14px", 
+const labelStyle = {
+  display: "block",
+  marginBottom: "8px",
+  color: "#5E5047",
+  fontSize: "14px",
   fontWeight: "600",
 };
 
