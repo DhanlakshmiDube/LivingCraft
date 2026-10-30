@@ -67,14 +67,14 @@ const PORT = process.env.PORT || 5000;
 async function startServer() {
   try {
     await connectDB();
-
-    app.listen(PORT, () => {
-      console.log(`LivingCraft server running on port ${PORT}`);
-      console.log(`Health check: http://localhost:${PORT}/api/health`);
-    });
   } catch (error) {
-    console.error("Failed to start LivingCraft server:", error.message);
+    console.warn("[Database Warning] Database initialization skipped:", error.message);
   }
+
+  app.listen(PORT, () => {
+    console.log(`LivingCraft server running on port ${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/api/health`);
+  });
 }
 
 startServer();
