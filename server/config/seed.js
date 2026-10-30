@@ -1,6 +1,6 @@
 const Product = require("../models/Product");
 const Contact = require("../models/Contact");
-const { defaultProducts } = require("../controllers/productController");
+const { defaultProducts } = require("../data/products");
 
 const seedDatabase = async () => {
   try {
